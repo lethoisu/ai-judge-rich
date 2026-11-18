@@ -13,7 +13,7 @@
 // one fixed-price service, buyers found by diagnosis instead of cold spam,
 // proof before payment, same-day delivery, a price ladder, and a kill rule.
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const OUTPUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
@@ -41,4 +41,10 @@ if (!/\S/.test(PLAN)) {
 }
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
-writeFileSync(join(OUTPUT_DIR, 'entry.txt'), PLAN, 'utf8');
+const outPath = join(OUTPUT_DIR, 'entry.txt');
+writeFileSync(outPath, PLAN, 'utf8');
+// Self-check: the bytes on disk must be exactly the plan, so a partial
+// write can never pass as a valid entry.
+if (readFileSync(outPath, 'utf8') !== PLAN) {
+  throw new Error('entry.txt on disk does not match the plan');
+}
